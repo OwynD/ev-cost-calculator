@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserInputs } from '@/types/calculator';
 
 interface InputFormProps {
@@ -9,9 +9,15 @@ interface InputFormProps {
 }
 
 export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
+  // Keep track of string values for each field to preserve user input like "0." or "0.0"
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+
   const handleChange = (field: keyof UserInputs, value: string) => {
+    // Store the raw string value for display
+    setFieldValues(prev => ({ ...prev, [field]: value }));
+    
     // Allow empty string and convert to 0 for calculations
-    if (value === '' || value === '-' || value === '.') {
+    if (value === '') {
       onInputsChange({ ...inputs, [field]: 0 });
       return;
     }
@@ -20,6 +26,23 @@ export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
     if (!isNaN(numValue) && numValue >= 0) {
       onInputsChange({ ...inputs, [field]: numValue });
     }
+  };
+
+  const handleBlur = (field: keyof UserInputs) => {
+    // Clear the string value when field loses focus
+    setFieldValues(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const getDisplayValue = (field: keyof UserInputs) => {
+    // Use string value if user is currently editing, otherwise use the numeric value
+    if (field in fieldValues) {
+      return fieldValues[field];
+    }
+    return inputs[field] || '';
   };
 
   return (
@@ -36,8 +59,9 @@ export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
             type="number"
             min="0"
             step="0.01"
-            value={inputs.electricityCost || ''}
+            value={getDisplayValue('electricityCost')}
             onChange={(e) => handleChange('electricityCost', e.target.value)}
+            onBlur={() => handleBlur('electricityCost')}
             onFocus={(e) => e.target.select()}
             placeholder="0.07"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
@@ -53,8 +77,9 @@ export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
             type="number"
             min="0"
             step="0.01"
-            value={inputs.publicChargingCost || ''}
+            value={getDisplayValue('publicChargingCost')}
             onChange={(e) => handleChange('publicChargingCost', e.target.value)}
+            onBlur={() => handleBlur('publicChargingCost')}
             onFocus={(e) => e.target.select()}
             placeholder="0.85"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
@@ -95,8 +120,9 @@ export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
             type="number"
             min="0"
             step="1"
-            value={inputs.teslaEfficiency || ''}
+            value={getDisplayValue('teslaEfficiency')}
             onChange={(e) => handleChange('teslaEfficiency', e.target.value)}
+            onBlur={() => handleBlur('teslaEfficiency')}
             onFocus={(e) => e.target.select()}
             placeholder="250"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
@@ -113,8 +139,9 @@ export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
             type="number"
             min="0"
             step="0.1"
-            value={inputs.petrolCarMPG || ''}
+            value={getDisplayValue('petrolCarMPG')}
             onChange={(e) => handleChange('petrolCarMPG', e.target.value)}
+            onBlur={() => handleBlur('petrolCarMPG')}
             onFocus={(e) => e.target.select()}
             placeholder="40"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
@@ -130,8 +157,9 @@ export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
             type="number"
             min="0"
             step="0.01"
-            value={inputs.petrolPrice || ''}
+            value={getDisplayValue('petrolPrice')}
             onChange={(e) => handleChange('petrolPrice', e.target.value)}
+            onBlur={() => handleBlur('petrolPrice')}
             onFocus={(e) => e.target.select()}
             placeholder="1.45"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
@@ -147,8 +175,9 @@ export default function InputForm({ inputs, onInputsChange }: InputFormProps) {
             type="number"
             min="0"
             step="10"
-            value={inputs.milesPerMonth || ''}
+            value={getDisplayValue('milesPerMonth')}
             onChange={(e) => handleChange('milesPerMonth', e.target.value)}
+            onBlur={() => handleBlur('milesPerMonth')}
             onFocus={(e) => e.target.select()}
             placeholder="800"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 font-medium"
