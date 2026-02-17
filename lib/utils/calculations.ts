@@ -1,4 +1,5 @@
 import { UserInputs, CalculationResults, ProjectionData } from '@/types/calculator';
+import { DEFAULT_VALUES, LITRES_PER_GALLON, CHART_CONFIG } from '@/lib/constants';
 
 /**
  * Calculate EV and petrol costs and savings
@@ -17,11 +18,10 @@ export function calculateCosts(inputs: UserInputs): CalculationResults {
   // Monthly EV cost = EV cost per mile * miles per month
   const monthlyEVCost = evCostPerMile * inputs.milesPerMonth;
   
-  // Petrol cost per mile = (petrol price per litre * 4.546) / MPG
-  // 4.546 litres in a gallon (UK gallon)
+  // Petrol cost per mile = (petrol price per litre * LITRES_PER_GALLON) / MPG
   // Prevent division by zero
   const petrolCostPerMile = inputs.petrolCarMPG > 0 
-    ? (inputs.petrolPrice * 4.546) / inputs.petrolCarMPG 
+    ? (inputs.petrolPrice * LITRES_PER_GALLON) / inputs.petrolCarMPG 
     : 0;
   
   // Monthly petrol cost = petrol cost per mile * miles per month
@@ -44,12 +44,12 @@ export function calculateCosts(inputs: UserInputs): CalculationResults {
 }
 
 /**
- * Generate projection data for 5 years of cumulative savings
+ * Generate projection data for cumulative savings over years
  */
 export function generateProjectionData(monthlySavings: number): ProjectionData[] {
   const projectionData: ProjectionData[] = [];
   
-  for (let year = 0; year <= 5; year++) {
+  for (let year = 0; year <= CHART_CONFIG.PROJECTION_YEARS; year++) {
     projectionData.push({
       year,
       savings: monthlySavings * 12 * year,
@@ -64,29 +64,12 @@ export function generateProjectionData(monthlySavings: number): ProjectionData[]
  */
 export function getDefaultInputs(): UserInputs {
   return {
-    electricityCost: 0.07, // £0.07 per kWh (UK off-peak home charging)
-    publicChargingCost: 0.85, // £0.85 per kWh (UK public charging average)
-    homeChargingPercentage: 80, // 80% of charging done at home
-    teslaEfficiency: 250, // 250 Wh per mile (Tesla Model 3 average)
-    petrolCarMPG: 40, // 40 MPG (typical petrol car)
-    petrolPrice: 1.45, // £1.45 per litre (UK average)
-    milesPerMonth: 800, // 800 miles per month (approx 10,000 miles per year)
+    electricityCost: DEFAULT_VALUES.ELECTRICITY_COST,
+    publicChargingCost: DEFAULT_VALUES.PUBLIC_CHARGING_COST,
+    homeChargingPercentage: DEFAULT_VALUES.HOME_CHARGING_PERCENTAGE,
+    teslaEfficiency: DEFAULT_VALUES.TESLA_EFFICIENCY,
+    petrolCarMPG: DEFAULT_VALUES.PETROL_CAR_MPG,
+    petrolPrice: DEFAULT_VALUES.PETROL_PRICE,
+    milesPerMonth: DEFAULT_VALUES.MILES_PER_MONTH,
   };
-}
-
-/**
- * Format currency value to £ format
- */
-export function formatCurrency(value: number): string {
-  if (!isFinite(value) || isNaN(value)) {
-    return '£0.00';
-  }
-  return `£${value.toFixed(2)}`;
-}
-
-/**
- * Format number to 2 decimal places
- */
-export function formatNumber(value: number): string {
-  return value.toFixed(2);
 }
